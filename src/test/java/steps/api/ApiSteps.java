@@ -16,6 +16,7 @@ public class ApiSteps extends APIUtils {
     RequestSpecification request;
     Response response;
     JSONObject requestBody = new JSONObject();
+    String sku;
 
     @Given("base url")
     public void base_url() {
@@ -27,6 +28,7 @@ public class ApiSteps extends APIUtils {
     @Given("user has valid authorization")
     public void user_has_valid_authorization() {
         request = request.header("Authorization", "Bearer " + ConfigurationReader.getProperty("apiToken"));
+        this.sku = sku;
     }
     @When("user hits POST {string}")
     public void user_hits_post(String endPoint) {
@@ -49,6 +51,28 @@ public class ApiSteps extends APIUtils {
         Assertions.assertEquals(statusCode, actualStatusCode);
 
         System.out.println("REsponse ==========:  " + response.asPrettyString());
+    }
+
+
+    @Given("product with sku {string} exists")
+    public void product_with_sku_exists(String sku) {
+        response = request
+                .when()
+                .get("/api/products/" + sku);
+
+        response.then().statusCode(200); // ensure it exists
+    }
+
+    @When("user sends GET request with valid product data {string}")
+    public void user_sends_get_request_with_valid_product_data(String sku) {
+        response = request
+                .when()
+                .get("/api/products/" + sku);
+    }
+
+    @Then("response status should be {int}")
+    public void response_status_should_be(Integer statusCode) {
+        response.then().statusCode(statusCode);
     }
 
 
