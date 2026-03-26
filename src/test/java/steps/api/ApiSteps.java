@@ -60,7 +60,7 @@ public class ApiSteps extends APIUtils {
                 .when()
                 .get("/api/products/" + sku);
 
-        response.then().statusCode(200); // ensure it exists
+        response.then().statusCode(200); 
     }
 
     @When("user sends GET request with valid product data {string}")
