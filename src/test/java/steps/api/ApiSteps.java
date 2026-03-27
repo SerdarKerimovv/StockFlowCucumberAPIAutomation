@@ -7,6 +7,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import utils.APIUtils;
@@ -97,13 +98,35 @@ public class ApiSteps extends APIUtils {
 
     @Then("the response {string} should be {int}")
     public void the_response_field_should_be(String fieldName, Integer expectedValue) {
-        int actualValue = response.jsonPath().getInt(fieldName);
+
+        // Convert response body to String
+        String responseBody = response.getBody().asString();
+
+        // Parse JSON manually
+        JSONObject jsonObject = new JSONObject(responseBody);
+
+        // Extract actual value
+        int actualValue = jsonObject.getInt(fieldName);
+
+        // Assertion
         assertEquals(expectedValue.intValue(), actualValue);
     }
 
     @Then("the response data array should be empty")
     public void the_response_data_array_should_be_empty() {
-        assertTrue(response.jsonPath().getList("data").isEmpty());
+
+        // Convert response to String
+        String responseBody = response.getBody().asString();
+
+        // Parse JSON
+        JSONObject jsonObject = new JSONObject(responseBody);
+
+        // Get "data" array
+        JSONArray dataArray = jsonObject.getJSONArray("data");
+
+        // Assert it's empty
+        assertTrue(dataArray.isEmpty());
     }
 
 }
+
