@@ -12,6 +12,11 @@ import org.junit.jupiter.api.Assertions;
 import utils.APIUtils;
 import utils.ConfigurationReader;
 
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class ApiSteps extends APIUtils {
     RequestSpecification request;
     Response response;
@@ -25,11 +30,13 @@ public class ApiSteps extends APIUtils {
                         ConfigurationReader.getProperty("apiBaseURL"))
                 .contentType(ContentType.JSON);
     }
+
     @Given("user has valid authorization")
     public void user_has_valid_authorization() {
         request = request.header("Authorization", "Bearer " + ConfigurationReader.getProperty("apiToken"));
         this.sku = sku;
     }
+
     @When("user hits POST {string}")
     public void user_hits_post(String endPoint) {
         JSONObject requestBody = new JSONObject();
@@ -45,10 +52,11 @@ public class ApiSteps extends APIUtils {
         response = request
                 .post(endPoint);
     }
+
     @Then("verify status code is {int}")
     public void verify_status_code_is(Integer statusCode) {
         int actualStatusCode = response.getStatusCode();
-        Assertions.assertEquals(statusCode, actualStatusCode);
+        assertEquals(statusCode, actualStatusCode);
 
         System.out.println("REsponse ==========:  " + response.asPrettyString());
     }
@@ -60,7 +68,7 @@ public class ApiSteps extends APIUtils {
                 .when()
                 .get("/api/products/" + sku);
 
-        response.then().statusCode(200); 
+        response.then().statusCode(200);
     }
 
     @When("user sends GET request with valid product data {string}")
@@ -75,5 +83,27 @@ public class ApiSteps extends APIUtils {
         response.then().statusCode(statusCode);
     }
 
+    @When("user hits GET {string} with query params")
+    public void user_hits_get_with_query_params(String endpoint, io.cucumber.datatable.DataTable dataTable) {
+        Map<String, String> queryParams = dataTable.asMap(String.class, String.class);
+
+        response = request
+                .queryParams(queryParams)
+                .when()
+                .get(endpoint);
+
+        System.out.println("Response:\n" + response.getBody().asPrettyString());
+    }
+
+    @Then("the response {string} should be {int}")
+    public void the_response_field_should_be(String fieldName, Integer expectedValue) {
+        int actualValue = response.jsonPath().getInt(fieldName);
+        assertEquals(expectedValue.intValue(), actualValue);
+    }
+
+    @Then("the response data array should be empty")
+    public void the_response_data_array_should_be_empty() {
+        assertTrue(response.jsonPath().getList("data").isEmpty());
+    }
 
 }
